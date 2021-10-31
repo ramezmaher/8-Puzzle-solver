@@ -1,6 +1,9 @@
 from queue import Queue
+from queue import PriorityQueue
+import math
 import copy
 
+TARGET_STATE = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
 
 def search_zero(array):
     for row in range(len(array)):
@@ -35,6 +38,10 @@ def print_format(phase_number, array):
             if row < len(arr) - 1:
                 print('-----', end='')
         print()
+
+def print_state(state):
+    #to do
+    return
 
 
 def bfs(current):
@@ -79,4 +86,38 @@ def bfs(current):
         return
 
 
-bfs([[1, 2, 5], [3, 4, 0], [6, 7, 8]])
+def manhattan_distance(x, y, val):
+    target_x = int(val/3)
+    target_y = val%3
+    return (abs(x-target_x)+abs(y-target_y))
+
+def euclidean_distance(x, y, val):
+    target_x = int(val/3)
+    target_y = val%3
+    return math.sqrt((x-target_x)**2 + (y-target_y) ** 2)
+
+def total_heuristics_distance(current_state, heuristics_func):
+    total_distance = 0
+    for i in range(3):
+        for j in range(3):
+            total_distance+= heuristics_func(i, j, current_state[i][j]) 
+    return total_distance
+
+
+def a_star_search(start_state, heuristics_func):
+    fringe = PriorityQueue()
+    distance_travelled = 0
+    fringe.put((total_heuristics_distance(start_state, heuristics_func), start_state))
+    while not fringe.empty():
+        current_state = fringe.get()
+        if current_state == TARGET_STATE:
+            print('Found')
+            print_state(current_state)
+            break
+
+
+
+    return 
+
+#bfs([[1, 2, 5], [3, 4, 0], [6, 7, 8]])
+print(total_heuristics_distance(array_to_string([[1, 2, 5], [3, 4, 0], [6, 7, 8]]), manhattan_distance))
