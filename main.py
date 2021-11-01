@@ -1,9 +1,11 @@
 from queue import Queue
-from queue import PriorityQueue
+from heapdict import heapdict
 import math
 import copy
 
-TARGET_STATE = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+########## GENERAL HELPERS #################
+
+TARGET_STATE = "012345678"
 
 def search_zero(array):
     for row in range(len(array)):
@@ -43,6 +45,28 @@ def print_state(state):
     #to do
     return
 
+def get_states(current_state, z_row, z_col):
+    next_states = []
+    for row, col in get_neighbors(z_row, z_col):
+        state = copy.deepcopy(current_state)
+        state[z_row][z_col] = state[row][col]
+        state[row][col] = 0
+        next_states.append(state)
+    return next_states
+
+def str_to_array(str):
+    board = []
+    k = 0
+    for i in range(3):
+        arr = []
+        for j in range(3):
+            arr.append(ord(str[k])-ord('0'))
+            k+=1
+        board.append(arr)
+    return board
+
+#############/////////////////////####################
+#############//////...BFS.../////#####################
 
 def bfs(current):
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -85,6 +109,8 @@ def bfs(current):
         print('No valid Answer')
         return
 
+#####################//////////////////#########################
+#####################/////...A*.../////#########################
 
 def manhattan_distance(x, y, val):
     target_x = int(val/3)
@@ -94,7 +120,7 @@ def manhattan_distance(x, y, val):
 def euclidean_distance(x, y, val):
     target_x = int(val/3)
     target_y = val%3
-    return math.sqrt((x-target_x)**2 + (y-target_y) ** 2)
+    return int(math.sqrt((x-target_x)**2 + (y-target_y) ** 2))
 
 def total_heuristics_distance(current_state, heuristics_func):
     total_distance = 0
@@ -103,21 +129,44 @@ def total_heuristics_distance(current_state, heuristics_func):
             total_distance+= heuristics_func(i, j, current_state[i][j]) 
     return total_distance
 
-
 def a_star_search(start_state, heuristics_func):
-    fringe = PriorityQueue()
-    distance_travelled = 0
-    fringe.put((total_heuristics_distance(start_state, heuristics_func), start_state))
-    while not fringe.empty():
-        current_state = fringe.get()
-        if current_state == TARGET_STATE:
-            print('Found')
-            print_state(current_state)
-            break
-
-
-
+    fringe = heapdict()
+    explored = set()
+    fringe[array_to_string(start_state)] = total_heuristics_distance(start_state, heuristics_func)
+    nodes_expanded = 0
+    while len(fringe) > 0:
+        nodes_expanded+=1
+        current_state_str, priority = fringe.popitem()
+        explored.add(current_state_str)
+        current_state = str_to_array(current_state_str)
+        distance_travelled = priority - total_heuristics_distance(current_state, heuristics_func)
+        if current_state_str == TARGET_STATE:
+            print(current_state_str)
+            print('Found!! Nodes expanded = '+str(nodes_expanded)) 
+            print('Optimal number of moves: '+str(distance_travelled))
+            return
+        distance_travelled+= 1
+        z_row, z_col = search_zero(current_state)
+        #print(current_state_str)
+        next_states = get_states(current_state, z_row, z_col)
+        for state in next_states:
+            state_str = array_to_string(state)
+            if state_str not in explored:
+                value = total_heuristics_distance(state, heuristics_func)+distance_travelled
+                if state_str not in fringe.keys(): 
+                    fringe[state_str] = value
+                else:
+                    fringe[state_str] = min(fringe[state_str], value)
+    print('Nodes expanded = '+str(nodes_expanded)) 
+    print('No solution')
     return 
 
-#bfs([[1, 2, 5], [3, 4, 0], [6, 7, 8]])
-print(total_heuristics_distance(array_to_string([[1, 2, 5], [3, 4, 0], [6, 7, 8]]), manhattan_distance))
+#######################/////////////////////########################
+######################//////...TEST...//////########################
+
+v = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
+f = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
+s = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
+#bfs(s)
+a_star_search(s, euclidean_distance)
+a_star_search(s, manhattan_distance)
