@@ -1,72 +1,81 @@
-from queue import Queue
 from heapdict import heapdict
-import math
-import copy
+from helpers import *
+from tkinter import *
+import pygame
+import time
+from queue import Queue
 
-########## GENERAL HELPERS #################
+WINDOW_WIDTH = 700
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+GREY = (128, 128, 128)
+START = 50
 
-TARGET_STATE = "012345678"
+pygame.init()
 
-def search_zero(array):
-    for row in range(len(array)):
-        for col in range(len(array[row])):
-            if array[row][col] == 0:
-                return row, col
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_WIDTH))
+pygame.display.set_caption("8 Puzzle Solver")
+font = pygame.font.SysFont("comicsans", 40)
 
+def draw(grid):
+    for j in range(3):
+        for i in range(3):
+            iloc = START+(i*200)
+            jloc = START+(j*200)
+            if grid[j][i] != 0:
+                pygame.draw.rect(window, WHITE, (iloc, jloc, 200, 200))
+                text1 = font.render(str(grid[j][i]), 20, BLACK)
+                window.blit(text1, (iloc+76, jloc+76))
+            else:
+                pygame.draw.rect(window, RED, (iloc, jloc, 200, 200))
 
-def get_neighbors(row, col):
-    answer = []
-    if row - 1 >= 0:
-        answer.append((row - 1, col))
-    if col - 1 >= 0:
-        answer.append((row, col - 1))
-    if row + 1 < 3:
-        answer.append((row + 1, col))
-    if col + 1 < 3:
-        answer.append((row, col + 1))
-    return answer
-
-
-def array_to_string(array):
-    return ''.join([''.join(map(str, x)) for x in array])
-
-
-def print_format(phase_number, array):
-    print('Phase no.'+str(phase_number))
     for i in range(3):
-        arr = [x[i] for x in array]
-        for row in range(len(arr)):
-            print(' '.join(map(str, arr[row])), end='')
-            if row < len(arr) - 1:
-                print('-----', end='')
-        print()
+        iloc = START+(i*200)
+        pygame.draw.line(window, BLACK, (50, iloc), (650, iloc), 3)
+        pygame.draw.line(window, BLACK, (iloc, 50), (iloc, 650), 3)
+    pygame.draw.line(window, BLACK, (650, 50), (650, 650), 3)
+    pygame.draw.line(window, BLACK, (50, 650), (650, 650), 3)
 
-def print_state(state):
-    #to do
+ 
+def a_star_search(start_state, heuristics_func):
+    fringe = heapdict()
+    explored = set()
+    fringe[array_to_string(start_state)] = total_heuristics_distance(start_state, heuristics_func)
+    nodes_expanded = 0
+    while len(fringe) > 0:
+        nodes_expanded+=1
+        current_state_str, priority = fringe.popitem()
+        explored.add(current_state_str)
+        current_state = str_to_array(current_state_str)
+        distance_travelled = priority - total_heuristics_distance(current_state, heuristics_func)
+        if current_state_str == "012345678":
+            draw(current_state)
+            pygame.display.update()
+            print('Found!! Nodes expanded = '+str(nodes_expanded)) 
+            print('Optimal number of moves: '+str(distance_travelled))
+            return
+        distance_travelled+= 1
+        z_row, z_col = search_zero(current_state)
+        draw(current_state)
+        pygame.display.update()
+        #time.sleep(1)
+        next_states = get_states(current_state, z_row, z_col)
+        for state in next_states:
+            state_str = array_to_string(state)
+            if state_str not in explored:
+                value = total_heuristics_distance(state, heuristics_func)+distance_travelled
+                if state_str not in fringe.keys(): 
+                    fringe[state_str] = value
+                else:
+                    fringe[state_str] = min(fringe[state_str], value)
+    print('Nodes expanded = '+str(nodes_expanded)) 
+    print('No solution')
     return
 
-def get_states(current_state, z_row, z_col):
-    next_states = []
-    for row, col in get_neighbors(z_row, z_col):
-        state = copy.deepcopy(current_state)
-        state[z_row][z_col] = state[row][col]
-        state[row][col] = 0
-        next_states.append(state)
-    return next_states
-
-def str_to_array(str):
-    board = []
-    k = 0
-    for i in range(3):
-        arr = []
-        for j in range(3):
-            arr.append(ord(str[k])-ord('0'))
-            k+=1
-        board.append(arr)
-    return board
-
-#############/////////////////////####################
-#############//////...BFS.../////#####################
 
 def bfs(current):
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -109,64 +118,24 @@ def bfs(current):
         print('No valid Answer')
         return
 
-#####################//////////////////#########################
-#####################/////...A*.../////#########################
 
-def manhattan_distance(x, y, val):
-    target_x = int(val/3)
-    target_y = val%3
-    return (abs(x-target_x)+abs(y-target_y))
+t1 = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
+t2 = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
+t3 = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
 
-def euclidean_distance(x, y, val):
-    target_x = int(val/3)
-    target_y = val%3
-    return int(math.sqrt((x-target_x)**2 + (y-target_y) ** 2))
+running = True
+flag = False
 
-def total_heuristics_distance(current_state, heuristics_func):
-    total_distance = 0
-    for i in range(3):
-        for j in range(3):
-            total_distance+= heuristics_func(i, j, current_state[i][j]) 
-    return total_distance
 
-def a_star_search(start_state, heuristics_func):
-    fringe = heapdict()
-    explored = set()
-    fringe[array_to_string(start_state)] = total_heuristics_distance(start_state, heuristics_func)
-    nodes_expanded = 0
-    while len(fringe) > 0:
-        nodes_expanded+=1
-        current_state_str, priority = fringe.popitem()
-        explored.add(current_state_str)
-        current_state = str_to_array(current_state_str)
-        distance_travelled = priority - total_heuristics_distance(current_state, heuristics_func)
-        if current_state_str == TARGET_STATE:
-            print(current_state_str)
-            print('Found!! Nodes expanded = '+str(nodes_expanded)) 
-            print('Optimal number of moves: '+str(distance_travelled))
-            return
-        distance_travelled+= 1
-        z_row, z_col = search_zero(current_state)
-        #print(current_state_str)
-        next_states = get_states(current_state, z_row, z_col)
-        for state in next_states:
-            state_str = array_to_string(state)
-            if state_str not in explored:
-                value = total_heuristics_distance(state, heuristics_func)+distance_travelled
-                if state_str not in fringe.keys(): 
-                    fringe[state_str] = value
-                else:
-                    fringe[state_str] = min(fringe[state_str], value)
-    print('Nodes expanded = '+str(nodes_expanded)) 
-    print('No solution')
-    return 
 
-#######################/////////////////////########################
-######################//////...TEST...//////########################
+while running:
+    window.fill(GREY)
+    for event in pygame.event.get():  
+        if event.type == pygame.QUIT:  
+           running = False
+    if not flag:
 
-v = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
-f = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
-s = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
-#bfs(s)
-a_star_search(s, euclidean_distance)
-a_star_search(s, manhattan_distance)
+        a_star_search(t3, manhattan_distance)
+        flag = True
+
+pygame.quit()
