@@ -1,6 +1,8 @@
 import copy
 import math
 
+TARGET_STATE = "012345678"
+
 def  char_to_int(c):
     return ord(c)-ord('0')
 
@@ -82,3 +84,11 @@ def total_heuristics_distance(current_state, heuristics_func):
         for j in range(3):
             total_distance+= heuristics_func(i, j, current_state[i][j]) 
     return total_distance
+
+def minimized_path(history):
+    current = TARGET_STATE
+    answer = []
+    while current != None:
+        answer.append(current)
+        current = history[current]
+    return answer

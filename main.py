@@ -1,14 +1,8 @@
 from heapdict import heapdict
 from helpers import *
-from tkinter import *
 import pygame
-import time
 from queue import Queue
-from termcolor import colored, cprint
 from time import sleep
-import os
-import math
-import copy
 
 WINDOW_WIDTH = 700
 BLACK = (0, 0, 0)
@@ -26,6 +20,7 @@ pygame.init()
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_WIDTH))
 pygame.display.set_caption("8 Puzzle Solver")
 font = pygame.font.SysFont("comicsans", 40)
+font2 = pygame.font.SysFont("comicsans", 15)
 
 def draw(grid):
     for j in range(3):
@@ -46,52 +41,35 @@ def draw(grid):
     pygame.draw.line(window, BLACK, (650, 50), (650, 650), 3)
     pygame.draw.line(window, BLACK, (50, 650), (650, 650), 3)
 
-
 def a_star_search(start_state, heuristics_func):
     fringe = heapdict()
     explored = set()
-    fringe[array_to_string(start_state)] = total_heuristics_distance(start_state, heuristics_func)
+    start_state_str = array_to_string(start_state)
+    fringe[start_state_str] = total_heuristics_distance(start_state, heuristics_func)
     nodes_expanded = 0
+    path_history = dict()
+    path_history[start_state_str] = None
     while len(fringe) > 0:
         nodes_expanded += 1
         current_state_str, priority = fringe.popitem()
         explored.add(current_state_str)
         current_state = str_to_array(current_state_str)
         distance_travelled = priority - total_heuristics_distance(current_state, heuristics_func)
-        if current_state_str == "012345678":
-            draw(current_state)
-            pygame.display.update()
-            print('Found!! Nodes expanded = ' + str(nodes_expanded))
-            print('Optimal number of moves: ' + str(distance_travelled))
-            return
+        if current_state_str == TARGET_STATE:
+            return (path_history, nodes_expanded, distance_travelled)
         distance_travelled += 1
         z_row, z_col = search_zero(current_state)
-        draw(current_state)
-        pygame.display.update()
-        # time.sleep(1)
         next_states = get_states(current_state, z_row, z_col)
         for state in next_states:
             state_str = array_to_string(state)
             if state_str not in explored:
+                path_history[state_str] = current_state_str
                 value = total_heuristics_distance(state, heuristics_func) + distance_travelled
                 if state_str not in fringe.keys():
                     fringe[state_str] = value
                 else:
                     fringe[state_str] = min(fringe[state_str], value)
-    print('Nodes expanded = ' + str(nodes_expanded))
-    print('No solution')
-    return
-
-
-def minimized_path(history, original):
-    current = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
-    answer = []
-    while current != original:
-        answer.append(current)
-        current = history[array_to_string(current)]
-    answer.append(original)
-    return answer
-
+    return (None, nodes_expanded, -1)
 
 def bfs(current):
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -140,46 +118,6 @@ def bfs(current):
     else:
         print('No valid Answer')
         return
-
-
-t1 = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
-t2 = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
-t3 = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
-print(bfs(t1))
-running = True
-flag = False
-
-
-while running:
-    window.fill(GREY)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-           running = False
-    if not flag:
-
-        a_star_search(t3, manhattan_distance)
-        flag = True
-
-pygame.quit()
-
-def screen_clear():
-    if os.name == 'posix':
-        _ = os.system('clear')
-    else:
-        _ = os.system('cls')
-
-
-def print_board(arr):
-    os.system('clear')
-    for i in range(3):
-        for j in range(3):
-            if arr[i][j] == 0:
-                print(colored('0', 'red', attrs=['bold']), end=" "),
-            else:
-                print(arr[i][j], end=" "),
-        print("")
-    sleep(1)
-
 
 def dfs(current):
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -245,3 +183,58 @@ def dfs(current):
     visited.add(array_to_string(current))
     counter = 0
     dfs_helper(current, row, col, final)
+
+
+
+
+t1 = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
+t2 = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
+t3 = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
+t4 = [[1, 2, 3], [4, 0, 6], [7, 5, 8]]
+#print(bfs(t1))
+running = True
+flag = False
+
+# to do: Take input from user { 1-board: String representing the board (fih function to check if input board valid fel helpers), 
+    #                               2-int representing the algorithm
+    # 
+
+grid = t4
+
+while running:
+    window.fill(GREY)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+           running = False
+    if not flag:
+        draw(grid)
+        pygame.display.update()
+        # To do: Pick one algorithm, all of them should have same API
+        # switch on algorithm type 
+        # a* with manhattan
+        path, nodes, dist = a_star_search(grid, manhattan_distance)
+        # a* with euclidean
+        # //////.......//////
+        # BFS
+        # /////......///////
+        # DFS
+        # /////......///////
+
+        if dist < 0: 
+            draw(grid)
+            pygame.display.update()
+            text1 = font2.render("No Solution :( !! Number of nodes expanded = "+str(nodes), 1, BLACK)
+            window.blit(text1, (50 , 660))
+        else:
+            grids = minimized_path(path)
+            g_len = len(grids)
+            for i in range(g_len):
+                draw(str_to_array(grids[g_len-1-i]))
+                pygame.display.update()
+                sleep(1)
+            text1 = font2.render("Found :) !! Number of nodes expanded = "+str(nodes)+" . Optimal path length = "+str(dist), 1, BLACK)
+            window.blit(text1, (50 , 660))
+        pygame.display.update()
+        flag = True
+
+pygame.quit()
