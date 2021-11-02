@@ -20,6 +20,7 @@ YELLOW = (255, 255, 0)
 GREY = (128, 128, 128)
 START = 50
 
+
 pygame.init()
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_WIDTH))
@@ -45,14 +46,14 @@ def draw(grid):
     pygame.draw.line(window, BLACK, (650, 50), (650, 650), 3)
     pygame.draw.line(window, BLACK, (50, 650), (650, 650), 3)
 
- 
+
 def a_star_search(start_state, heuristics_func):
     fringe = heapdict()
     explored = set()
     fringe[array_to_string(start_state)] = total_heuristics_distance(start_state, heuristics_func)
     nodes_expanded = 0
     while len(fringe) > 0:
-        nodes_expanded+=1
+        nodes_expanded += 1
         current_state_str, priority = fringe.popitem()
         explored.add(current_state_str)
         current_state = str_to_array(current_state_str)
@@ -60,30 +61,41 @@ def a_star_search(start_state, heuristics_func):
         if current_state_str == "012345678":
             draw(current_state)
             pygame.display.update()
-            print('Found!! Nodes expanded = '+str(nodes_expanded)) 
-            print('Optimal number of moves: '+str(distance_travelled))
+            print('Found!! Nodes expanded = ' + str(nodes_expanded))
+            print('Optimal number of moves: ' + str(distance_travelled))
             return
-        distance_travelled+= 1
+        distance_travelled += 1
         z_row, z_col = search_zero(current_state)
         draw(current_state)
         pygame.display.update()
-        #time.sleep(1)
+        # time.sleep(1)
         next_states = get_states(current_state, z_row, z_col)
         for state in next_states:
             state_str = array_to_string(state)
             if state_str not in explored:
-                value = total_heuristics_distance(state, heuristics_func)+distance_travelled
-                if state_str not in fringe.keys(): 
+                value = total_heuristics_distance(state, heuristics_func) + distance_travelled
+                if state_str not in fringe.keys():
                     fringe[state_str] = value
                 else:
                     fringe[state_str] = min(fringe[state_str], value)
-    print('Nodes expanded = '+str(nodes_expanded)) 
+    print('Nodes expanded = ' + str(nodes_expanded))
     print('No solution')
     return
 
 
+def minimized_path(history, original):
+    current = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+    answer = []
+    while current != original:
+        answer.append(current)
+        current = history[array_to_string(current)]
+    answer.append(original)
+    return answer
+
+
 def bfs(current):
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+    original = current
     row, col = search_zero(current)
     _queue = Queue()
     _queue.put((current, row, col))
@@ -93,6 +105,7 @@ def bfs(current):
     counter = 0
     history = []
     phase = 0
+    path_history = dict()
     while not _queue.empty():
         counter += 1
         current, row, col = _queue.get()
@@ -108,16 +121,21 @@ def bfs(current):
             phase += 1
             print_format(phase, history)
             print("Expanded " + str(counter) + " times")
-            return counter
+            return minimized_path(path_history, original)
+        new_one = False
         for neighbor_row, neighbor_col in get_neighbors(row, col):
             current[row][col], current[neighbor_row][neighbor_col] = current[neighbor_row][neighbor_col], current[row][
                 col]
             new_array = array_to_string(current)
             if new_array not in visited:
+                new_one = True
                 visited.add(new_array)
                 _queue.put((copy.deepcopy(current), neighbor_row, neighbor_col))
             current[row][col], current[neighbor_row][neighbor_col] = current[neighbor_row][neighbor_col], current[row][
                 col]
+            if new_one:
+                path_history[new_array] = copy.deepcopy(current)
+                new_one = False
         _queue.put((-1, -1, -1))
     else:
         print('No valid Answer')
@@ -127,14 +145,15 @@ def bfs(current):
 t1 = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
 t2 = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
 t3 = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
-
+print(bfs(t1))
 running = True
 flag = False
 
+
 while running:
     window.fill(GREY)
-    for event in pygame.event.get():  
-        if event.type == pygame.QUIT:  
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
            running = False
     if not flag:
 
@@ -144,10 +163,11 @@ while running:
 pygame.quit()
 
 def screen_clear():
-   if os.name == 'posix':
-      _ = os.system('clear')
-   else:
-      _ = os.system('cls')
+    if os.name == 'posix':
+        _ = os.system('clear')
+    else:
+        _ = os.system('cls')
+
 
 def print_board(arr):
     os.system('clear')
@@ -159,7 +179,8 @@ def print_board(arr):
                 print(arr[i][j], end=" "),
         print("")
     sleep(1)
-    
+
+
 def dfs(current):
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     row, col = search_zero(current)
