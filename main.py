@@ -1,6 +1,7 @@
 from heapdict import heapdict
 from helpers import *
 import pygame
+from tkinter import *
 from queue import Queue
 from time import sleep
 
@@ -42,6 +43,7 @@ def draw(grid):
     pygame.draw.line(window, BLACK, (50, 650), (650, 650), 3)
 
 def a_star_search(start_state, heuristics_func):
+    root.destroy()
     fringe = heapdict()
     explored = set()
     start_state_str = array_to_string(start_state)
@@ -72,6 +74,8 @@ def a_star_search(start_state, heuristics_func):
     return (None, nodes_expanded, -1)
 
 def bfs(current):
+    root.destroy()
+    current = str_to_array(current)
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     original = current
     row, col = search_zero(current)
@@ -120,6 +124,8 @@ def bfs(current):
         return
 
 def dfs(current):
+    root.destroy()
+    current = str_to_array(current)
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     row, col = search_zero(current)
 
@@ -201,6 +207,38 @@ flag = False
 
 grid = t4
 
+global valid_input, initial, a
+valid_input = False
+initial = ''
+a = False
+def p():
+    global valid_input
+    global initial
+    if check_valid_board_str(e1.get()):
+        valid_input = True
+        initial = e1.get()
+        return True, e1.get()
+
+def bfsCall():
+    if valid_input:
+        bfs(initial)
+def dfsCall():
+    if valid_input:
+        dfs(initial)
+def a_starCall():
+    global a
+    if valid_input:
+        a = True
+        dfs(initial)
+def manhattanCall():
+    global a
+    if a and valid_input:
+        a_star_search(initial, manhattan_distance)
+def euclideanCall():
+    global a
+    if a and valid_input:
+        a_star_search(initial, euclidean_distance)
+
 while running:
     window.fill(GREY)
     for event in pygame.event.get():
@@ -212,6 +250,42 @@ while running:
         # To do: Pick one algorithm, all of them should have same API
         # switch on algorithm type 
         # a* with manhattan
+
+        root = Tk()
+        root.geometry('800x500+100+200')
+        root.title('8-Puzzle Solver')
+        Label(root, text='Enter initial state like a string (final state is 012345678) :').pack()
+        e1 = Entry(root)
+        e1.pack()
+        Label(root, text='').pack()
+
+        while True:
+            solveButton = Button(root, text='Solve Puzzle', width=13, height=1, command=p).pack()
+            Label(root, text='').pack()
+            Label(root, text='').pack()
+            Label(root, text='').pack()
+            frame = Frame(root)
+            frame.pack()
+            bfsButton = Button(frame, text='BFS', width=25, height=4, fg='red', command=bfsCall)
+            bfsButton.pack(side=LEFT)
+            dfsButton = Button(frame, text='DFS', width=25, height=4, fg='green', command=dfsCall)
+            dfsButton.pack(side=LEFT)
+            a_starButton = Button(frame, text='A*', width=25, height=4, fg='blue', command=a_starCall)
+            a_starButton.pack(side=LEFT)
+            Label(root, text='').pack()
+            Label(root, text='').pack()
+            Label(root, text='').pack()
+            Label(root, text='If you chose A*, choose the heuristic:').pack()
+            f = Frame(root)
+            f.pack()
+            manhattanButton = Button(f, text='Manhattan', width=25, height=4, command=manhattanCall)
+            manhattanButton.pack(side=LEFT)
+            euclideanButton = Button(f, text='Euclidean', width=25, height=4, command=euclideanCall)
+            euclideanButton.pack(side=LEFT)
+            root.mainloop()
+            if valid_input:
+                break
+
         path, nodes, dist = a_star_search(grid, manhattan_distance)
         # a* with euclidean
         # //////.......//////
