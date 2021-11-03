@@ -68,23 +68,6 @@ def get_states(current_state, z_row, z_col):
         next_states.append(state)
     return next_states
 
-def manhattan_distance(x, y, val):
-    target_x = int(val/3)
-    target_y = val%3
-    return (abs(x-target_x)+abs(y-target_y))
-
-def euclidean_distance(x, y, val):
-    target_x = int(val/3)
-    target_y = val%3
-    return int(math.sqrt((x-target_x)**2 + (y-target_y) ** 2))
-
-def total_heuristics_distance(current_state, heuristics_func):
-    total_distance = 0
-    for i in range(3):
-        for j in range(3):
-            total_distance+= heuristics_func(i, j, current_state[i][j]) 
-    return total_distance
-
 def minimized_path(history):
     current = TARGET_STATE
     answer = []
