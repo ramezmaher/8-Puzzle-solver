@@ -42,11 +42,11 @@ def draw(grid):
     pygame.draw.line(window, BLACK, (650, 50), (650, 650), 3)
     pygame.draw.line(window, BLACK, (50, 650), (650, 650), 3)
 
-def a_star_search(start_state, heuristics_func):
+def a_star_search(start_state_str, heuristics_func):
     root.destroy()
     fringe = heapdict()
     explored = set()
-    start_state_str = array_to_string(start_state)
+    start_state = str_to_array(start_state_str)
     fringe[start_state_str] = total_heuristics_distance(start_state, heuristics_func)
     nodes_expanded = 0
     path_history = dict()
