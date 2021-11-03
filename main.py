@@ -33,7 +33,7 @@ def draw(grid):
                 text1 = font.render(str(grid[j][i]), 20, BLACK)
                 window.blit(text1, (iloc+76, jloc+76))
             else:
-                pygame.draw.rect(window, RED, (iloc, jloc, 200, 200))
+                pygame.draw.rect(window, BLACK, (iloc, jloc, 200, 200))
 
     for i in range(3):
         iloc = START+(i*200)
@@ -302,10 +302,16 @@ while running:
         else:
             grids = minimized_path(path)
             g_len = len(grids)
+            counter = 0
             for i in range(g_len):
                 draw(str_to_array(grids[g_len-1-i]))
+                text1 = font2.render("Number of moves: "+str(counter), 1, BLACK)
+                window.blit(text1, (50 , 660))
                 pygame.display.update()
+                window.fill(GREY)
+                counter+=1
                 sleep(1)
+            draw(str_to_array(TARGET_STATE))
             text1 = font2.render("Found :) !! Number of nodes expanded = "+str(nodes)+" . Optimal path length = "+str(dist), 1, BLACK)
             window.blit(text1, (50 , 660))
         pygame.display.update()
