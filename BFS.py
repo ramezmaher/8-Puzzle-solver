@@ -3,6 +3,7 @@ from queue import Queue
 
 
 def bfs(current):
+    current = str_to_array(current)
     final = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     row, col = search_zero(current)
     _queue = Queue()
@@ -15,7 +16,7 @@ def bfs(current):
     while not _queue.empty():
         current, row, col = _queue.get()
         if current == final:
-            return path_history, phase, len(minimized_path(path_history))
+            return path_history, phase, len(minimized_path(path_history))-1
         new_one = False
         for neighbor_row, neighbor_col in get_neighbors(row, col):
             current[row][col], current[neighbor_row][neighbor_col] = current[neighbor_row][neighbor_col], current[row][

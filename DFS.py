@@ -10,7 +10,6 @@ def dfs(current):
     def dfs_helper(current_graph, zero_row, zero_col, goal):
         nonlocal counter
         counter += 1
-        print(current_graph)
         if current_graph == goal:
             return path_history, counter, len(path_history.keys())
         if zero_row > 0:
