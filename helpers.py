@@ -49,15 +49,6 @@ def check_valid_board_str(str):
         s.add(n)
     return True
 
-def print_format(phase_number, array):
-    print('Phase no.'+str(phase_number))
-    for i in range(3):
-        arr = [x[i] for x in array]
-        for row in range(len(arr)):
-            print(' '.join(map(str, arr[row])), end='')
-            if row < len(arr) - 1:
-                print('-----', end='')
-        print()
 
 def get_states(current_state, z_row, z_col):
     next_states = []
