@@ -8,7 +8,6 @@ def bfs(current):
     row, col = search_zero(current)
     _queue = Queue()
     _queue.put((current, row, col))
-    _queue.put((-1, -1, -1))
     visited = set()
     visited.add(array_to_string(current))
     phase = 0
@@ -31,8 +30,7 @@ def bfs(current):
             current[row][col], current[neighbor_row][neighbor_col] = current[neighbor_row][neighbor_col], current[row][
                 col]
             if new_one:
-                path_history[new_array] = copy.deepcopy(current)
+                path_history[new_array] = array_to_string(current)
                 new_one = False
-        _queue.put((-1, -1, -1))
     else:
         return None, phase, -1
