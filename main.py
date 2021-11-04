@@ -18,30 +18,35 @@ YELLOW = (255, 255, 0)
 GREY = (128, 128, 128)
 START = 50
 
-global valid_input, initial, a
+global valid_input, initial, a, op_lock
 global path, nodes, distance
 valid_input = False
 initial = ''
 a = False
+op_lock = True
 
 def p():
-    global valid_input
+    global valid_input, op_lock
     global initial
     if check_valid_board_str(e1.get()):
         valid_input = True
         initial = e1.get()
-        print(initial)
+        op_lock = False
         return True, e1.get()
 
 def bfsCall():
-    global path, nodes, distance
-    if valid_input:
+    global path, nodes, distance, op_lock
+    if valid_input and not op_lock:
+        op_lock = True
         path, nodes, distance = bfs(initial)
+        root.destroy()
 
 def dfsCall():
-    global path, nodes, distance
-    if valid_input:
+    global path, nodes, distance, op_lock
+    if valid_input and not op_lock:
+        op_lock = True
         path, nodes, distance = dfs(initial)
+        root.destroy()
 
 def a_starCall():
     global a
@@ -49,18 +54,22 @@ def a_starCall():
         a = True
 
 def manhattanCall():
-    global a
+    global a, op_lock
     global path, nodes, distance
-    if a and valid_input:
+    if a and valid_input and not op_lock:
+        op_lock = True
         path, nodes, distance = a_star_search(initial, manhattan_distance)
         a = False
+        root.destroy()
 
 def euclideanCall():
-    global a
+    global a, op_lock
     global path, nodes, distance
-    if a and valid_input:
+    if a and valid_input and not op_lock:
+        op_lock = True
         path, nodes, distance = a_star_search(initial, euclidean_distance)
-        a = False 
+        a = False
+        root.destroy() 
 
 root = Tk()
 root.geometry('800x500+100+200')
@@ -70,8 +79,9 @@ e1 = Entry(root)
 e1.pack()
 Label(root, text='').pack()
 
-while True:
-    solveButton = Button(root, text='Solve Puzzle', width=13, height=1, command=p).pack()
+def draw_menu():
+    solveButton = Button(root, text='Insert Input', width=13, height=1, command=p)
+    solveButton.pack()
     Label(root, text='').pack()
     Label(root, text='').pack()
     Label(root, text='').pack()
@@ -94,10 +104,8 @@ while True:
     euclideanButton = Button(f, text='Euclidean', width=25, height=4, command=euclideanCall)
     euclideanButton.pack(side=LEFT)
     root.mainloop()
-    if valid_input:
-        break
 
-root.destroy()
+draw_menu()
 
 pygame.init()
 
