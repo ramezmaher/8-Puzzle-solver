@@ -7,6 +7,8 @@ def  char_to_int(c):
     return ord(c)-ord('0')
 
 def str_to_array(str):
+    if str == None or len(str) == 0:
+        return
     board = []
     k = 0
     for i in range(3):

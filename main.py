@@ -24,6 +24,7 @@ valid_input = False
 initial = ''
 a = False
 op_lock = True
+distance = -1
 
 def p():
     global valid_input, op_lock
@@ -163,7 +164,7 @@ t2 = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
 t3 = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
 t4 = [[1, 2, 3], [4, 0, 6], [7, 5, 8]]
 
-running = True
+running = valid_input
 flag = False
 grid = str_to_array(initial)
 
@@ -177,10 +178,10 @@ while running:
         draw(grid)
         pygame.display.update()
 
-        if distance < 0:
-            show_failure(grid) 
-        else:
+        if distance >= 0:
             show_game()
+        else:
+            show_failure(grid) 
         pygame.display.update()
         flag = True
 
