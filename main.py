@@ -153,16 +153,16 @@ def show_game():
         pygame.display.update()
         window.fill(GREY)
         counter+=1
-        sleep(1)
+        #sleep(1)
     draw(str_to_array(TARGET_STATE))
     text1 = font2.render("Found :) !! Number of nodes expanded = "+str(nodes)+" . Optimal path length = "+str(distance), 1, BLACK)
     window.blit(text1, (50 , 660))
 
 
-t1 = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
-t2 = [[1, 2, 7], [3, 4, 6], [0, 5, 8]]
-t3 = [[1, 2, 0], [3, 4, 6], [7, 5, 8]]
-t4 = [[1, 2, 3], [4, 0, 6], [7, 5, 8]]
+t1 = "125340678"
+t2 = "127346058"
+t3 = "120346758"
+t4 = "123406758"
 
 running = valid_input
 flag = False
